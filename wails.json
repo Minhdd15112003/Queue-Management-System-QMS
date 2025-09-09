@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "CSM",
+  "outputfilename": "CSM",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "http://localhost:5174",
+  "author": {
+    "name": "minhdd15112003",
+    "email": "minhdd15112003@gmail.com"
+  }
+}
