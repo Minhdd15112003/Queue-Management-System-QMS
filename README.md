@@ -218,13 +218,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 👥 Authors
 
-- **Your Name** - *Initial work* - [YourGitHub](https://github.com/yourusername)
-
-## 📞 Support
-
-- 📧 Email: support@example.com
-- 🐛 Issues: [GitHub Issues](https://github.com/username/queue-management-system/issues)
-- 📖 Documentation: [Wiki](https://github.com/username/queue-management-system/wiki)
+- **Your Name** - *Initial work* - [YourGitHub]([https://github.com/yourusername](https://github.com/Minhdd15112003))
+- 📧 Email: minhdd15112003@gmail.com
 
 ## 🔮 Roadmap
 
