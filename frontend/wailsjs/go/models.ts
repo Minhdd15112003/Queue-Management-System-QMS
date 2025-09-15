@@ -20,7 +20,8 @@ export namespace types {
 	}
 	export class ImportResult {
 	    success: boolean;
-	    data?: any[];
+	    data?: any;
+	    message?: string;
 	    error?: string;
 	
 	    static createFrom(source: any = {}) {
@@ -31,6 +32,7 @@ export namespace types {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.success = source["success"];
 	        this.data = source["data"];
+	        this.message = source["message"];
 	        this.error = source["error"];
 	    }
 	}

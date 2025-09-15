@@ -10,9 +10,10 @@ type ExcelData struct {
 
 // ImportResult struct cho response
 type ImportResult struct {
-	Success bool                     `json:"success"`
-	Data    []map[string]interface{} `json:"data,omitempty"`
-	Error   string                   `json:"error,omitempty"`
+	Success bool        `json:"success"`
+	Data    interface{} `json:"data,omitempty"`
+	Message string      `json:"message,omitempty"`
+	Error   string      `json:"error,omitempty"`
 }
 
 // ExportResult struct cho response

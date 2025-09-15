@@ -1,5 +1,13 @@
 import './assets/css/App.css';
-import { ImportExcel, GetCurrentData } from '../wailsjs/go/main/App';
+import {
+  ImportExcel,
+  GetCurrentData,
+  NextQueue,
+  SpeakVietnamese,
+  BackQueue,
+  ReCallQueue,
+  SkipQueue,
+} from '../wailsjs/go/main/App';
 import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import CurrentNumber from './components/CurrentNumber';
@@ -37,7 +45,9 @@ function App() {
     try {
       const result = await GetCurrentData();
       if (result && result.data && result.data.length > 0) {
-        const currentNumberItem = result.data.find((item) => item.status === QueueStatus.SERVING);
+        const currentNumberItem = result.data.find(
+          (item: any) => item.status === QueueStatus.SERVING,
+        );
         setCurrentItem({
           currentNumber: currentNumberItem ? currentNumberItem.id : 0,
           queueStatus: currentNumberItem ? currentNumberItem.status : QueueStatus.WAITING,
@@ -45,8 +55,10 @@ function App() {
 
         setStatistics({
           activeCounters: result.counter,
-          servedToday: result.data.filter((item) => item.status === QueueStatus.COMPLETED).length,
-          totalWaiting: result.data.filter((item) => item.status === QueueStatus.WAITING).length,
+          servedToday: result.data.filter((item: any) => item.status === QueueStatus.COMPLETED)
+            .length,
+          totalWaiting: result.data.filter((item: any) => item.status === QueueStatus.WAITING)
+            .length,
           averageWaitTime: '10m', // Tính toán thời gian chờ trung bình nếu cần
         });
         console.log(result.data);
@@ -102,50 +114,56 @@ function App() {
     }
   };
 
-  // const handleNextNumber = () => {
-  //   const nextIndex = excelData.findIndex((item: any) => item.status === 'next');
-  //   if (nextIndex !== -1) {
-  //     const newQueueList = [...excelData];
-  //     const currentIndex = excelData.findIndex((item: any) => item.status === 'serving');
+  const handleNextNumber = () => {
+    if (excelData.length === 0) {
+      setMessage('Danh sách trống. Vui lòng import file Excel trước.');
+      return;
+    }
+    const index = excelData.findIndex((item) => item.status === QueueStatus.SERVING);
+    NextQueue(index)
+      .then((res) => {
+        loadCurrentData();
+        SpeakVietnamese(res.message || 'Số tiếp theo, xin mời quý khách.');
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
-  //     // Mark current as completed and remove
-  //     if (currentIndex !== -1) {
-  //       newQueueList.splice(currentIndex, 1);
-  //     }
+  const handleBackNumber = () => {
+    if (excelData.length === 0) {
+      setMessage('Danh sách trống. Vui lòng import file Excel trước.');
+      return;
+    }
+    const index = excelData.findIndex((item) => item.status === QueueStatus.SERVING);
+    BackQueue(index)
+      .then((res) => {
+        loadCurrentData();
+        SpeakVietnamese(res.message || 'Số trước đó, xin mời quý khách.');
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
-  //     // Move next to serving
-  //     const adjustedNextIndex =
-  //       currentIndex !== -1 && currentIndex < nextIndex ? nextIndex - 1 : nextIndex;
-  //     if (adjustedNextIndex < newQueueList.length) {
-  //       newQueueList[adjustedNextIndex].status = QueueStatus.SERVING;
-  //       newQueueList[adjustedNextIndex].counter = 1;
-  //       setCurrentNumber(newQueueList[adjustedNextIndex].id);
-  //     }
+  const handleRecallCurrent = () => {
+    const index = excelData.findIndex((item) => item.status === QueueStatus.SERVING);
+    ReCallQueue(index).then((res) => {
+      SpeakVietnamese(res.message || 'Xin mời quý khách.');
+    });
+  };
 
-  //     // Set new next if available
-  //     if (adjustedNextIndex + 1 < newQueueList.length) {
-  //       newQueueList[adjustedNextIndex + 1].status = QueueStatus.NEXT;
-  //     }
-
-  //     setExcelData(newQueueList);
-  //     setStatistics((prev) => ({
-  //       ...prev,
-  //       totalWaiting: prev.totalWaiting - 1,
-  //       servedToday: prev.servedToday + 1,
-  //     }));
-  //   }
-  // };
-
-  // const handleBackNumber = () => {};
-
-  // const handleRecallCurrent = () => {
-  //   // Logic for recalling current number
-  //   console.log('Recalling current number:', currentNumber);
-  // };
-
-  // const handlePauseQueue = () => {
-  //   setQueueStatus(queueStatus === QueueStatus.PAUSED ? QueueStatus.SERVING : QueueStatus.PAUSED);
-  // };
+  const handleSkipCurrent = () => {
+    if (excelData.length === 0) {
+      setMessage('Danh sách trống. Vui lòng import file Excel trước.');
+      return;
+    }
+    const index = excelData.findIndex((item) => item.status === QueueStatus.SERVING);
+    SkipQueue(index).then((res) => {
+      loadCurrentData();
+      SpeakVietnamese(res.message || 'Số tiếp theo, xin mời quý khách.');
+    });
+  };
 
   return (
     <>
@@ -162,12 +180,11 @@ function App() {
 
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
             <ControlPanel
-              // onNextNumber={handleNextNumber}
-              // onBackNumber={handleBackNumber}
-              // onRecallCurrent={handleRecallCurrent}
-              // onPauseQueue={handlePauseQueue}
-              // onAddNew={handleAddNew}
-              queueStatus={currentItem?.queueStatus}
+              onNextCurrent={handleNextNumber}
+              onBackCurrent={handleBackNumber}
+              onRecallCurrent={handleRecallCurrent}
+              loading={loading}
+              onSkipCurrent={handleSkipCurrent}
               handleExportExcel={handleImportExcel}
             />
 

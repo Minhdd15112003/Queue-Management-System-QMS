@@ -1,7 +1,8 @@
 package main
 
 import (
-	"CSM/types"
+	"CSM/src/services"
+	"CSM/src/types"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -9,6 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/xuri/excelize/v2"
@@ -38,6 +40,18 @@ func (a *App) startup(ctx context.Context) {
 
 	// Load data có sẵn (nếu có)
 	a.loadPersistedData()
+}
+
+// SpeakVietnamese - Hàm nói text bằng tiếng Việt
+func (a *App) SpeakVietnamese(text string) error {
+	switch runtime.GOOS {
+	case "windows":
+		return services.SpeakWindows(text)
+	case "linux":
+		return services.SpeakLinux(text)
+	default:
+		return fmt.Errorf("unsupported operating system")
+	}
 }
 
 // getDataDir trả về đường dẫn thư mục lưu trữ data
@@ -214,4 +228,123 @@ func (a *App) GetHeaders() []string {
 		headers = append(headers, key)
 	}
 	return headers
+}
+
+func (a *App) NextQueue(rowIndex int) types.ImportResult {
+	if currentExcelData.Data == nil || rowIndex < 0 || rowIndex >= len(currentExcelData.Data) {
+		return types.ImportResult{
+			Success: false,
+			Error:   "Row index out of range or no data exists",
+		}
+	}
+
+	if rowIndex+1 >= len(currentExcelData.Data) {
+		return types.ImportResult{
+			Success: false,
+			Message: "Đây là số thứ tự cuối cùng",
+			Error:   "No next row available",
+		}
+	}
+
+	//update status ojb hiện tại về  waiting
+	//lấy ojb tiếp theo trong currentExcelData.Data và update ojb đó về  serving
+	currentExcelData.Data[rowIndex]["status"] = "completed"
+	currentExcelData.Data[rowIndex+1]["status"] = "serving"
+	data := currentExcelData.Data[rowIndex+1]
+	a.persistData(currentExcelData)
+	return types.ImportResult{
+		Success: true,
+		Message: fmt.Sprintf("Số thứ tự %v, mời quý khách đến quầy %v", data["id"], data["counter"]),
+		Data:    data,
+	}
+}
+
+func (a *App) BackQueue(rowIndex int) types.ImportResult {
+	if currentExcelData.Data == nil || rowIndex < 0 || rowIndex >= len(currentExcelData.Data) {
+		return types.ImportResult{
+			Success: false,
+			Error:   "Row index out of range or no data exists",
+		}
+	}
+
+	if rowIndex-1 < 0 {
+		return types.ImportResult{
+			Success: false,
+			Message: "Đây là số thứ tự đầu tiên",
+			Error:   "No previous row available",
+		}
+	}
+
+	//update status ojb hiện tại về  waiting
+	//lấy ojb tiếp theo trong currentExcelData.Data và update ojb đó về  serving
+	currentExcelData.Data[rowIndex]["status"] = "waiting"
+	currentExcelData.Data[rowIndex-1]["status"] = "serving"
+	data := currentExcelData.Data[rowIndex-1]
+	a.persistData(currentExcelData)
+	return types.ImportResult{
+		Success: true,
+		Message: fmt.Sprintf("Số thứ tự %v, mời quý khách đến quầy %v", data["id"], data["counter"]),
+		Data:    data,
+	}
+}
+
+func (a *App) ReCallQueue(rowIndex int) types.ImportResult {
+	if currentExcelData.Data == nil || rowIndex < 0 || rowIndex >= len(currentExcelData.Data) {
+		return types.ImportResult{
+			Success: false,
+			Error:   "Row index out of range or no data exists",
+		}
+	}
+	data := currentExcelData.Data[rowIndex]
+	return types.ImportResult{
+		Success: true,
+		Message: fmt.Sprintf("Số thứ tự %v, mời quý khách đến quầy %v", data["id"], data["counter"]),
+		Data:    data,
+	}
+}
+
+func (a *App) SkipQueue(rowIndex int) types.ImportResult {
+	if currentExcelData.Data == nil || rowIndex < 0 || rowIndex >= len(currentExcelData.Data) {
+		return types.ImportResult{
+			Success: false,
+			Error:   "Row index out of range or no data exists",
+		}
+	}
+
+	if rowIndex+1 >= len(currentExcelData.Data) {
+		return types.ImportResult{
+			Success: false,
+			Message: "Đây là số thứ tự cuối cùng",
+			Error:   "No next row available",
+		}
+	}
+
+	currentExcelData.Data[rowIndex]["status"] = "skip"
+	currentExcelData.Data[rowIndex+1]["status"] = "serving"
+
+	data := currentExcelData.Data[rowIndex+1]
+	a.persistData(currentExcelData)
+	return types.ImportResult{
+		Success: true,
+		Message: fmt.Sprintf("Số thứ tự %v đã bị bỏ qua, mời quý khách đến số tiếp theo %v", currentExcelData.Data[rowIndex]["id"], data["id"]),
+		Data:    data,
+	}
+}
+
+func (a *App) UpdateRow(rowIndex int, rowObj map[string]interface{}) types.ImportResult {
+	if currentExcelData.Data == nil || rowIndex >= len(currentExcelData.Data) {
+		return types.ImportResult{
+			Success: false,
+			Error:   "Row index out of range or no data exists",
+		}
+	}
+	// cập nhật row
+	currentExcelData.Data[rowIndex] = rowObj
+	a.loadPersistedData()
+
+	return types.ImportResult{
+		Success: true,
+		Data:    currentExcelData.Data,
+	}
+
 }

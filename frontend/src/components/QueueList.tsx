@@ -48,6 +48,14 @@ const QueueList = ({ queueList, message, loading }: QueueListProps) => {
           statusText: 'Bỏ qua',
           statusClass: 'bg-red-100 text-red-800',
         };
+      case QueueStatus.COMPLETED:
+        return {
+          containerClass: 'bg-blue-50 border-blue-200',
+          numberClass: 'bg-blue-500',
+          statusText: 'Đã hoàn thành',
+          statusClass: 'bg-blue-100 text-blue-800',
+        };
+
       default:
         return {
           containerClass: 'bg-gray-50 border-gray-200',
@@ -148,7 +156,7 @@ const QueueList = ({ queueList, message, loading }: QueueListProps) => {
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${style.statusClass}`}
                     >
-                      {item.status === 'serving' ? 'Đang xử lý' : 'Chờ đợi'}
+                      {style.statusText}
                     </span>
                   </div>
                 </div>
