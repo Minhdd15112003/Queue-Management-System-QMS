@@ -211,33 +211,6 @@ build/
 3. Commit changes: `git commit -m 'Add amazing feature'`
 4. Push branch: `git push origin feature/amazing-feature`
 5. Tạo Pull Request
-
-## 📝 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## 👥 Authors
-
-- **Your Name** - *Initial work* - [YourGitHub]([https://github.com/yourusername](https://github.com/Minhdd15112003))
-- 📧 Email: minhdd15112003@gmail.com
-
-## 🔮 Roadmap
-
-- [ ] 📱 Mobile app support
-- [ ] 🔔 Push notifications
-- [ ] 📊 Advanced analytics
-- [ ] 🌐 Multi-language support
-- [ ] ☁️ Cloud synchronization
-- [ ] 🔐 User authentication
-- [ ] 📈 Reporting system
-
-## 🙏 Acknowledgments
-
-- [Wails](https://wails.io/) - Amazing Go + Frontend framework
-- [Excelize](https://github.com/qax-os/excelize) - Excel file processing
-- [React](https://reactjs.org/) - Frontend library
-- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
-
 ---
 
 ⭐ **Don't forget to give the project a star if you liked it!**
